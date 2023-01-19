@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "rocksdb/version.h"
-#include "rocksdb/utilities/object_registry.h"
 #include "util/string_util.h"
 
 // The build script may replace these values with real values based
@@ -26,9 +25,6 @@ extern "C" {
 
 } // extern "C"
 
-std::unordered_map<std::string, ROCKSDB_NAMESPACE::RegistrarFunc> ROCKSDB_NAMESPACE::ObjectRegistry::builtins_ = {
-  
-};
 #endif //ROCKSDB_LITE
 
 namespace ROCKSDB_NAMESPACE {
