@@ -107,7 +107,7 @@ fn link_cpp(build: &mut Build) {
 }
 
 fn build_rocksdb() -> Build {
-    let mut cfg = Config::new("../rocksdb-util");
+    let mut cfg = Config::new("");
     if cfg!(feature = "portable") {
         cfg.define("PORTABLE", "ON");
     }
