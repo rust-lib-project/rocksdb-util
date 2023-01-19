@@ -114,6 +114,15 @@ public:
     }
 };
 
+
+// Base class for RocksDB built-in filter reader with
+// extra useful functionalities for inernal.
+class BuiltinFilterBitsReader : public FilterBitsReader {
+public:
+    // Check if the hash of the entry match the bits in filter
+    virtual bool HashMayMatch(const uint64_t /* h */) { return true; }
+};
+
 // Contextual information passed to BloomFilterPolicy at filter building time.
 // Used in overriding FilterPolicy::GetBuilderWithContext(). References other
 // structs because this is expected to be a temporary, stack-allocated object.
@@ -254,5 +263,6 @@ extern const FilterPolicy* NewBloomFilterPolicy(
 // memory.
 extern FilterBitsBuilder* CreateStandard128RibbonBitsBuilder(double bits_per_key);
 extern FilterBitsBuilder* CreateFastLocalBloomBitsBuilder(double bits_per_key);
+extern FilterBitsReader* GetBuiltinFilterBitsReader(const Slice& contents);
 
 }  // namespace ROCKSDB_NAMESPACE

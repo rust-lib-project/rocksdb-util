@@ -70,6 +70,7 @@ extern "C" {
 /* Exported types */
 
 typedef struct rocksdb_filterbits_builder_t rocksdb_filterbits_builder_t;
+typedef struct rocksdb_filterbits_reader_t rocksdb_filterbits_reader_t;
 
 /* Filter policy */
 extern ROCKSDB_LIBRARY_API void rocksdb_filterbits_builder_destroy(
@@ -79,6 +80,13 @@ extern ROCKSDB_LIBRARY_API rocksdb_filterbits_builder_t*
 rocksdb_ribbon_filterbits_builder_create(double bits_per_key);
 extern ROCKSDB_LIBRARY_API rocksdb_filterbits_builder_t*
 rocksdb_fast_bloom_filter_builder_create(double bits_per_key);
+extern ROCKSDB_LIBRARY_API void rocksdb_filterbits_builder_add_key(rocksdb_filterbits_builder_t*, const char*, size_t);
+extern ROCKSDB_LIBRARY_API const char* rocksdb_filterbits_builder_finish(rocksdb_filterbits_builder_t*, size_t*);
+extern ROCKSDB_LIBRARY_API void rocksdb_filterbits_reader_destroy(rocksdb_filterbits_reader_t* filter);
+extern ROCKSDB_LIBRARY_API rocksdb_filterbits_reader_t*
+rocksdb_filterbits_reader_create(const char* data, size_t data_len);
+extern ROCKSDB_LIBRARY_API bool rocksdb_filterbits_reader_may_match(rocksdb_filterbits_reader_t*, const char*, size_t);
+
 #ifdef __cplusplus
 }  /* end extern "C" */
 #endif

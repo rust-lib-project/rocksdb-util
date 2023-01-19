@@ -1393,12 +1393,16 @@ FilterBitsBuilder* CreateStandard128RibbonBitsBuilder(double bits_per_key) {
                     bits_per_key,
                     FastLocalBloomImpl::ChooseNumProbes(millibits_per_key),
                     /*cache_line_bits*/ 512);
-    return new Standard128RibbonBitsBuilder(millibits_per_key, desired_one_in_fp_rate, nullptr);
+    return new Standard128RibbonBitsBuilder(desired_one_in_fp_rate, millibits_per_key, nullptr);
 }
 
 FilterBitsBuilder* CreateFastLocalBloomBitsBuilder(double bits_per_key) {
     int millibits_per_key = convert_millibits(bits_per_key);
     return new FastLocalBloomBitsBuilder(millibits_per_key, nullptr);
+}
+
+FilterBitsReader* GetBuiltinFilterBitsReader(const Slice& contents) {
+    return BuiltinFilterPolicy::GetBuiltinFilterBitsReader(contents);
 }
 
 }  // namespace ROCKSDB_NAMESPACE

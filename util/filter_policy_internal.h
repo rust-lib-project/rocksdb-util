@@ -35,14 +35,6 @@ class BuiltinFilterBitsBuilder : public FilterBitsBuilder {
   virtual double EstimatedFpRate(size_t num_entries, size_t bytes) = 0;
 };
 
-// Base class for RocksDB built-in filter reader with
-// extra useful functionalities for inernal.
-class BuiltinFilterBitsReader : public FilterBitsReader {
- public:
-  // Check if the hash of the entry match the bits in filter
-  virtual bool HashMayMatch(const uint64_t /* h */) { return true; }
-};
-
 // Base class for RocksDB built-in filter policies. This provides the
 // ability to read all kinds of built-in filters (so that old filters can
 // be used even when you change between built-in policies).
