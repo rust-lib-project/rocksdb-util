@@ -441,7 +441,6 @@ find_package(Threads REQUIRED)
 # Main library source code
 
 set(SOURCES
-        c.cc
         util/async_file_reader.cc
         util/cleanable.cc
         util/coding.cc

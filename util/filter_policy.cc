@@ -1363,6 +1363,42 @@ BuiltinFilterBitsReader* BuiltinFilterPolicy::GetBloomBitsReader(
 FilterBuildingContext::FilterBuildingContext() {}
 
 FilterPolicy::~FilterPolicy() { }
+int convert_millibits(double bits_per_key) {
+    // Sanitize bits_per_key
+    if (bits_per_key < 0.5) {
+        // Round down to no filter
+        bits_per_key = 0;
+    } else if (bits_per_key < 1.0) {
+        // Minimum 1 bit per key (equiv) when creating filter
+        bits_per_key = 1.0;
+    } else if (!(bits_per_key < 100.0)) {  // including NaN
+        bits_per_key = 100.0;
+    }
 
+
+    // Includes a nudge toward rounding up, to ensure on all platforms
+    // that doubles specified with three decimal digits after the decimal
+    // point are interpreted accurately.
+    return static_cast<int>(bits_per_key * 1000.0 + 0.500001);
+}
+
+
+FilterBitsBuilder* CreateStandard128RibbonBitsBuilder(double bits_per_key) {
+    int millibits_per_key = convert_millibits(bits_per_key);
+    // For now configure Ribbon filter to match Bloom FP rate and save
+    // memory. (Ribbon bits per key will be ~30% less than Bloom bits per key
+    // for same FP rate.)
+    double desired_one_in_fp_rate =
+            1.0 / BloomMath::CacheLocalFpRate(
+                    bits_per_key,
+                    FastLocalBloomImpl::ChooseNumProbes(millibits_per_key),
+                    /*cache_line_bits*/ 512);
+    return new Standard128RibbonBitsBuilder(millibits_per_key, desired_one_in_fp_rate, nullptr);
+}
+
+FilterBitsBuilder* CreateFastLocalBloomBitsBuilder(double bits_per_key) {
+    int millibits_per_key = convert_millibits(bits_per_key);
+    return new FastLocalBloomBitsBuilder(millibits_per_key, nullptr);
+}
 
 }  // namespace ROCKSDB_NAMESPACE

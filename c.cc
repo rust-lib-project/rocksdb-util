@@ -18,56 +18,42 @@
 
 #include "port/port.h"
 #include "rocksdb/status.h"
+#include "rocksdb/filter_policy.h"
 
 using ROCKSDB_NAMESPACE::PinnableSlice;
 using ROCKSDB_NAMESPACE::Slice;
 using ROCKSDB_NAMESPACE::SliceParts;
 using ROCKSDB_NAMESPACE::Status;
+using ROCKSDB_NAMESPACE::FilterBitsBuilder;
+using ROCKSDB_NAMESPACE::CreateStandard128RibbonBitsBuilder;
+using ROCKSDB_NAMESPACE::CreateFastLocalBloomBitsBuilder;
 
 using std::vector;
 using std::unordered_set;
 
 extern "C" {
 
-struct rocksdb_filterpolicy_t {
-    int a;
+struct rocksdb_filterbits_builder_t {
+    FilterBitsBuilder* builder;
 };
 
-
-void rocksdb_filterpolicy_destroy(rocksdb_filterpolicy_t* filter) {
+void rocksdb_filterbits_builder_destroy(rocksdb_filterbits_builder_t* filter) {
+  if (filter->builder != nullptr) {
+      delete filter->builder;
+  }
   delete filter;
 }
 
-rocksdb_filterpolicy_t* rocksdb_filterpolicy_create_bloom_format() {
-  return NULL;
+rocksdb_filterbits_builder_t* rocksdb_ribbon_filterbits_builder_create(double bits_per_key) {
+    rocksdb_filterbits_builder_t* wrapper = new rocksdb_filterbits_builder_t;
+    wrapper->builder = CreateStandard128RibbonBitsBuilder(bits_per_key);
+    return wrapper;
 }
 
-rocksdb_filterpolicy_t* rocksdb_filterpolicy_create_bloom_full(
-    double bits_per_key) {
-    return NULL;
-}
-
-rocksdb_filterpolicy_t* rocksdb_filterpolicy_create_bloom(double bits_per_key) {
-    return NULL;
-}
-
-rocksdb_filterpolicy_t* rocksdb_filterpolicy_create_ribbon_format(
-    double bloom_equivalent_bits_per_key, int bloom_before_level) {
-  // Make a rocksdb_filterpolicy_t, but override all of its methods so
-  // they delegate to a NewRibbonFilterPolicy() instead of user
-  return NULL;
-}
-
-rocksdb_filterpolicy_t* rocksdb_filterpolicy_create_ribbon(
-    double bloom_equivalent_bits_per_key) {
-  return rocksdb_filterpolicy_create_ribbon_format(
-      bloom_equivalent_bits_per_key, /*bloom_before_level = disabled*/ -1);
-}
-
-rocksdb_filterpolicy_t* rocksdb_filterpolicy_create_ribbon_hybrid(
-    double bloom_equivalent_bits_per_key, int bloom_before_level) {
-  return rocksdb_filterpolicy_create_ribbon_format(
-      bloom_equivalent_bits_per_key, bloom_before_level);
+rocksdb_filterbits_builder_t* rocksdb_fast_bloom_filter_builder_create(double bits_per_key) {
+    rocksdb_filterbits_builder_t* wrapper = new rocksdb_filterbits_builder_t;
+    wrapper->builder = CreateStandard128RibbonBitsBuilder(bits_per_key);
+    return wrapper;
 }
 
 }  // end extern "C"

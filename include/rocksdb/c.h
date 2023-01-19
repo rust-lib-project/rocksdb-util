@@ -69,22 +69,16 @@ extern "C" {
 
 /* Exported types */
 
-typedef struct rocksdb_env_t             rocksdb_env_t;
-typedef struct rocksdb_filterpolicy_t    rocksdb_filterpolicy_t;
+typedef struct rocksdb_filterbits_builder_t rocksdb_filterbits_builder_t;
 
 /* Filter policy */
-extern ROCKSDB_LIBRARY_API void rocksdb_filterpolicy_destroy(
-    rocksdb_filterpolicy_t*);
+extern ROCKSDB_LIBRARY_API void rocksdb_filterbits_builder_destroy(
+        rocksdb_filterbits_builder_t*);
 
-extern ROCKSDB_LIBRARY_API rocksdb_filterpolicy_t*
-rocksdb_filterpolicy_create_bloom(double bits_per_key);
-extern ROCKSDB_LIBRARY_API rocksdb_filterpolicy_t*
-rocksdb_filterpolicy_create_bloom_full(double bits_per_key);
-extern ROCKSDB_LIBRARY_API rocksdb_filterpolicy_t*
-rocksdb_filterpolicy_create_ribbon(double bloom_equivalent_bits_per_key);
-extern ROCKSDB_LIBRARY_API rocksdb_filterpolicy_t*
-rocksdb_filterpolicy_create_ribbon_hybrid(double bloom_equivalent_bits_per_key,
-                                          int bloom_before_level);
+extern ROCKSDB_LIBRARY_API rocksdb_filterbits_builder_t*
+rocksdb_ribbon_filterbits_builder_create(double bits_per_key);
+extern ROCKSDB_LIBRARY_API rocksdb_filterbits_builder_t*
+rocksdb_fast_bloom_filter_builder_create(double bits_per_key);
 #ifdef __cplusplus
 }  /* end extern "C" */
 #endif
