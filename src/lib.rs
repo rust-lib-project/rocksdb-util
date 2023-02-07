@@ -86,6 +86,9 @@ impl Drop for FilterBitsBuilderWrapper {
     }
 }
 
+unsafe impl Send for FilterBitsBuilderWrapper {}
+unsafe impl Sync for FilterBitsBuilderWrapper {}
+
 pub struct FilterBitsReaderWrapper {
     _data: Vec<u8>,
     inner: *mut FilterBitsReader,
