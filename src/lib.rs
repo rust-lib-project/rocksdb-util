@@ -14,6 +14,7 @@ extern "C" {
         key: *const c_char,
         key_len: size_t,
     );
+    fn rocksdb_filterbits_builder_add_key_hash(builder: *mut FilterBitsBuilder, hash: u64);
     fn rocksdb_filterbits_builder_finish(
         builder: *mut FilterBitsBuilder,
         buf_len: *mut size_t,
@@ -27,6 +28,10 @@ extern "C" {
         reader: *const FilterBitsReader,
         data: *const c_char,
         key_len: size_t,
+    ) -> bool;
+    fn rocksdb_filterbits_reader_may_match_hash(
+        reader: *const FilterBitsReader,
+        value: u64,
     ) -> bool;
 }
 
@@ -55,6 +60,12 @@ impl FilterBitsBuilderWrapper {
     pub fn add_key(&mut self, key: &[u8]) {
         unsafe {
             rocksdb_filterbits_builder_add_key(self.inner, key.as_ptr() as _, key.len() as size_t);
+        }
+    }
+
+    pub fn add_key_hash(&mut self, hash: u64) {
+        unsafe {
+            rocksdb_filterbits_builder_add_key_hash(self.inner, hash);
         }
     }
 
@@ -97,6 +108,10 @@ impl FilterBitsReaderWrapper {
                 key.len(),
             )
         }
+    }
+
+    pub fn hash_may_match(&self, key: u64) -> bool {
+        unsafe { rocksdb_filterbits_reader_may_match_hash(self.inner, key) }
     }
 }
 

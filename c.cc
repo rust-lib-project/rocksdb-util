@@ -20,15 +20,16 @@
 #include "rocksdb/status.h"
 #include "rocksdb/filter_policy.h"
 
+using ROCKSDB_NAMESPACE::BuiltinFilterBitsReader;
+using ROCKSDB_NAMESPACE::CreateFastLocalBloomBitsBuilder;
+using ROCKSDB_NAMESPACE::CreateStandard128RibbonBitsBuilder;
+using ROCKSDB_NAMESPACE::FilterBitsBuilder;
+using ROCKSDB_NAMESPACE::FilterBitsReader;
+using ROCKSDB_NAMESPACE::GetBuiltinFilterBitsReader;
 using ROCKSDB_NAMESPACE::PinnableSlice;
 using ROCKSDB_NAMESPACE::Slice;
 using ROCKSDB_NAMESPACE::SliceParts;
 using ROCKSDB_NAMESPACE::Status;
-using ROCKSDB_NAMESPACE::FilterBitsBuilder;
-using ROCKSDB_NAMESPACE::FilterBitsReader;
-using ROCKSDB_NAMESPACE::CreateStandard128RibbonBitsBuilder;
-using ROCKSDB_NAMESPACE::CreateFastLocalBloomBitsBuilder;
-using ROCKSDB_NAMESPACE::GetBuiltinFilterBitsReader;
 
 using std::vector;
 using std::unordered_set;
@@ -40,7 +41,7 @@ struct rocksdb_filterbits_builder_t {
 };
 
 struct rocksdb_filterbits_reader_t {
-    FilterBitsReader* reader;
+  BuiltinFilterBitsReader *reader;
 };
 
 void rocksdb_filterbits_builder_destroy(rocksdb_filterbits_builder_t* filter) {
@@ -64,6 +65,10 @@ rocksdb_filterbits_builder_t* rocksdb_fast_bloom_filter_builder_create(double bi
 
 void rocksdb_filterbits_builder_add_key(rocksdb_filterbits_builder_t* filter, const char* key, size_t keylen) {
     filter->builder->AddKey(Slice(key, keylen));
+}
+
+void rocksdb_filterbits_builder_add_key_hash(rocksdb_filterbits_builder_t* filter, uint64_t hash) {
+    filter->builder->AddKeyHash(hash);
 }
 
 const char* rocksdb_filterbits_builder_finish(rocksdb_filterbits_builder_t* filter, size_t* buf_len) {
@@ -92,6 +97,11 @@ rocksdb_filterbits_reader_t* rocksdb_filterbits_reader_create(const char* data, 
 
 bool rocksdb_filterbits_reader_may_match(rocksdb_filterbits_reader_t* filter, const char* key, size_t key_len) {
     return filter->reader->MayMatch(Slice(key, key_len));
+}
+
+bool rocksdb_filterbits_reader_may_match_hash(
+    rocksdb_filterbits_reader_t *filter, uint64_t hash) {
+  return filter->reader->HashMayMatch(hash);
 }
 
 }  // end extern "C"

@@ -75,6 +75,16 @@ class XXPH3FilterBitsBuilder : public BuiltinFilterBitsBuilder {
     }
   }
 
+  virtual void AddKeyHash(uint64_t hash) override {
+    if (hash_entries_info_.entries.empty() ||
+        hash != hash_entries_info_.entries.back()) {
+      if (detect_filter_construct_corruption_) {
+        hash_entries_info_.xor_checksum ^= hash;
+      }
+      hash_entries_info_.entries.push_back(hash);
+    }
+  }
+
   virtual size_t EstimateEntriesAdded() override {
     return hash_entries_info_.entries.size();
   }
@@ -897,6 +907,7 @@ class LegacyBloomBitsBuilder : public BuiltinFilterBitsBuilder {
   ~LegacyBloomBitsBuilder() override;
 
   void AddKey(const Slice& key) override;
+  void AddKeyHash(uint64_t key) override;
 
   virtual size_t EstimateEntriesAdded() override {
     return hash_entries_.size();
@@ -949,6 +960,13 @@ LegacyBloomBitsBuilder::~LegacyBloomBitsBuilder() {}
 
 void LegacyBloomBitsBuilder::AddKey(const Slice& key) {
   uint32_t hash = BloomHash(key);
+  if (hash_entries_.size() == 0 || hash != hash_entries_.back()) {
+    hash_entries_.push_back(hash);
+  }
+}
+
+void LegacyBloomBitsBuilder::AddKeyHash(uint64_t key) {
+  uint32_t hash = (uint32_t)key;
   if (hash_entries_.size() == 0 || hash != hash_entries_.back()) {
     hash_entries_.push_back(hash);
   }
@@ -1118,7 +1136,13 @@ class LegacyBloomBitsReader : public BuiltinFilterBitsReader {
     }
   }
 
-  bool HashMayMatch(const uint64_t /* h */) override { return false; }
+  bool HashMayMatch(const uint64_t hash) override {
+    uint32_t byte_offset;
+    LegacyBloomImpl::PrepareHashMayMatch(
+        hash, num_lines_, data_, /*out*/ &byte_offset, log2_cache_line_size_);
+    return LegacyBloomImpl::HashMayMatchPrepared(
+        hash, num_probes_, data_ + byte_offset, log2_cache_line_size_);
+  }
 
  private:
   const char* data_;
@@ -1401,8 +1425,8 @@ FilterBitsBuilder* CreateFastLocalBloomBitsBuilder(double bits_per_key) {
     return new FastLocalBloomBitsBuilder(millibits_per_key, nullptr);
 }
 
-FilterBitsReader* GetBuiltinFilterBitsReader(const Slice& contents) {
-    return BuiltinFilterPolicy::GetBuiltinFilterBitsReader(contents);
+BuiltinFilterBitsReader *GetBuiltinFilterBitsReader(const Slice &contents) {
+  return BuiltinFilterPolicy::GetBuiltinFilterBitsReader(contents);
 }
 
 }  // namespace ROCKSDB_NAMESPACE

@@ -47,6 +47,7 @@ public:
     // only add this key if its hash is different from the most recently
     // added.
     virtual void AddKey(const Slice& key) = 0;
+    virtual void AddKeyHash(uint64_t key) = 0;
 
     // Called by RocksDB before Finish to populate
     // TableProperties::num_filter_entries, so should represent the
@@ -263,6 +264,7 @@ extern const FilterPolicy* NewBloomFilterPolicy(
 // memory.
 extern FilterBitsBuilder* CreateStandard128RibbonBitsBuilder(double bits_per_key);
 extern FilterBitsBuilder* CreateFastLocalBloomBitsBuilder(double bits_per_key);
-extern FilterBitsReader* GetBuiltinFilterBitsReader(const Slice& contents);
+extern BuiltinFilterBitsReader *
+GetBuiltinFilterBitsReader(const Slice &contents);
 
 }  // namespace ROCKSDB_NAMESPACE
