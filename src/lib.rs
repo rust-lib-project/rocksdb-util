@@ -115,6 +115,9 @@ impl FilterBitsReaderWrapper {
     }
 }
 
+unsafe impl Send for FilterBitsReaderWrapper {}
+unsafe impl Sync for FilterBitsReaderWrapper {}
+
 impl Drop for FilterBitsReaderWrapper {
     fn drop(&mut self) {
         unsafe {
